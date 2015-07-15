@@ -19,7 +19,7 @@ buildscript {
   }
   dependencies {
     classpath 'org.scala-lang:scala-library:2.11.5'
-    classpath 'org.coursera.courier:gradle-plugin_2.11:0.3.1'
+    classpath 'org.coursera.courier:gradle-plugin_2.11:0.4.1'
   }
 }
 ```
@@ -39,7 +39,7 @@ repositories {
 dependencies {
   compile 'org.scala-lang:scala-library:2.11.5'
   courierCompile 'org.scala-lang:scala-library:2.11.5'
-  courierCompile 'org.coursera.courier:courier-runtime_2.11:0.3.1'
+  courierCompile 'org.coursera.courier:courier-runtime_2.11:0.4.1'
 }
 ```
 

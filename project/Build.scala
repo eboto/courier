@@ -21,6 +21,7 @@ import Keys._
 import org.coursera.courier.sbt.Sonatype
 import play.twirl.sbt.SbtTwirl
 import play.twirl.sbt.Import.TwirlKeys
+import pl.project13.scala.sbt.JmhPlugin
 
 /**
  * SBT project for Courier.
@@ -112,6 +113,15 @@ object Courier extends Build with OverridablePublishSettings {
         ExternalDependencies.ScalaLogging.scalaLoggingSlf4j,
         ExternalDependencies.JUnit.junit,
         ExternalDependencies.Scalatest.scalatest))
+
+  lazy val benchmark = Project(id = "courier-benchmark", base = file("benchmark"))
+    .dependsOn(generator)
+    .settings(runtimeVersionSettings)
+    .settings(packagedArtifacts := Map.empty) // do not publish
+    .settings(forkedVmCourierGeneratorSettings: _*)
+    .settings(
+      libraryDependencies ++= Seq("com.typesafe.play" %% "play-json" % "2.3.8"))
+    .enablePlugins(JmhPlugin)
 
   lazy val courierSbtPlugin = Project(id = "courier-sbt-plugin", base = file("sbt-plugin"))
     .dependsOn(generator)
