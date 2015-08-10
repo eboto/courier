@@ -1,5 +1,6 @@
 build
 .gradle
+gradle
 example/build
 example/.gradle
 example/src/mainGeneratedCourier

@@ -2,7 +2,11 @@ package org.coursera.courier.gradle
 
 import java.io.File
 
+import org.coursera.courier.api.DefaultGeneratorRunner
+import org.coursera.courier.api.GeneratorRunnerOptions
+import org.coursera.courier.api.PegasusCodeGenerator
 import org.coursera.courier.generator.ScalaDataTemplateGenerator
+import org.coursera.courier.generator.twirl.TwirlDataTemplateGenerator
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
@@ -12,6 +16,7 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileCopyDetails
 import org.gradle.api.specs.Spec
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
@@ -24,6 +29,10 @@ import org.gradle.plugins.ide.idea.GenerateIdeaModule
 
 import scala.beans.BeanProperty
 import scala.collection.JavaConverters._
+
+class CourierPluginExtension {
+  @BeanProperty var codeGenerator: String = _
+}
 
 /**
  * Provides a gradle plugin for Courier.
@@ -65,6 +74,8 @@ class CourierPlugin extends Plugin[Project] {
    */
   def apply(project: Project): Unit = {
     val configurations = project.getConfigurations
+
+    project.getExtensions.create("courier", classOf[CourierPluginExtension])
 
     /**
      * Configurations for depending on data schemas, generating data bindings
@@ -289,6 +300,11 @@ class GeneratorTask extends DefaultTask {
 
   @TaskAction
   protected def generate(): Unit = {
+    val extension = getProject.getProperties.get("courier").asInstanceOf[CourierPluginExtension]
+    System.err.println("extension: " + extension)
+    System.err.println("extension.codeGenerator: " + extension.codeGenerator)
+    val pegasusCodeGeneratorClass = Option(extension.codeGenerator).getOrElse(classOf[TwirlDataTemplateGenerator].getName)
+
     destinationDir.delete()
     destinationDir.mkdirs()
 
@@ -301,12 +317,9 @@ class GeneratorTask extends DefaultTask {
     val resolverPathList = resolverPath.asScala.toList
     val resolverPathStr = (inputDir :: resolverPathList).mkString(File.pathSeparator)
 
-    ScalaDataTemplateGenerator.run(
-      resolverPath = resolverPathStr,
-      defaultPackage =  "",
-      generateImported = false,
-      targetDirectoryPath = destinationDir.getAbsolutePath,
-      sources = pdscFileArray,
-      generateTyperefs = false)
+    val generatorRunner = new DefaultGeneratorRunner()
+    generatorRunner.run(
+      Class.forName(pegasusCodeGeneratorClass).newInstance().asInstanceOf[PegasusCodeGenerator],
+      new GeneratorRunnerOptions(destinationDir.getAbsolutePath, pdscFileArray, resolverPathStr))
   }
 }

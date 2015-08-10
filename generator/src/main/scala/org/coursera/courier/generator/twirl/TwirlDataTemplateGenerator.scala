@@ -17,9 +17,10 @@
 package org.coursera.courier.generator.twirl
 
 import com.typesafe.scalalogging.slf4j.StrictLogging
-import org.coursera.courier.generator.CompilationUnit
+import org.coursera.courier.api.PegasusCodeGenerator
+import org.coursera.courier.generator.ScalaCompilationUnit
 import org.coursera.courier.generator.CourierPredef
-import org.coursera.courier.generator.GeneratedCode
+import org.coursera.courier.generator.ScalaGeneratedCode
 import org.coursera.courier.generator.TemplateGenerator
 import org.coursera.courier.generator.specs.ArrayDefinition
 import org.coursera.courier.generator.specs.Definition
@@ -41,11 +42,14 @@ import org.coursera.courier.templates.txt.UnionClass
 /**
  * Generates Scala files using the Twirl string template engine.
  */
-class TwirlDataTemplateGenerator(generateTyperefs: Boolean)
+class TwirlDataTemplateGenerator()
   extends TemplateGenerator
   with StrictLogging {
 
-  def generate(topLevelSpec: Definition): Option[GeneratedCode] = {
+  // TODO(jbetz): Make configurable
+  val generateTyperefs = false
+
+  override def generate(topLevelSpec: Definition): Option[ScalaGeneratedCode] = {
     val maybeCode = topLevelSpec match {
       case predef: Definition if CourierPredef.definitions.contains(predef) =>
         None // Predefined types should already exist, so we don't generate them
@@ -70,11 +74,13 @@ class TwirlDataTemplateGenerator(generateTyperefs: Boolean)
       case primitive: PrimitiveDefinition =>
         None // nothing to generate for primitives
       case _ =>
-        throw new IllegalArgumentException(s"Unsupported schema type: ${topLevelSpec.getClass}")
+        None
+        //throw new IllegalArgumentException(s"Unsupported schema type: ${topLevelSpec.getClass} " +
+        //  s"for ${topLevelSpec.scalaTypeFullname}")
     }
     maybeCode.map { code =>
       val namespace = topLevelSpec.namespace.getOrElse("")
-      GeneratedCode(code, CompilationUnit(topLevelSpec.scalaType, namespace))
+      ScalaGeneratedCode(code, ScalaCompilationUnit(topLevelSpec.scalaType, namespace))
     }
   }
 
@@ -83,7 +89,7 @@ class TwirlDataTemplateGenerator(generateTyperefs: Boolean)
    *
    * We only generate schemas for pre defined types when re-generating types in courier-runtime.
    */
-  def generatePredef(): Seq[GeneratedCode] = {
+  override def generatePredefinedTypes(): Seq[ScalaGeneratedCode] = {
     CourierPredef.bySchema.flatMap { case (schema, definition) =>
       val code = definition match {
         case array: ArrayDefinition =>
@@ -94,11 +100,7 @@ class TwirlDataTemplateGenerator(generateTyperefs: Boolean)
           throw new IllegalArgumentException(s"Unsupported schema type: ${schema.getClass}")
       }
       val namespace = definition.namespace.getOrElse("")
-      Some(GeneratedCode(code, CompilationUnit(definition.scalaType, namespace)))
+      Some(ScalaGeneratedCode(code, ScalaCompilationUnit(definition.scalaType, namespace)))
     }.toSeq
-  }
-
-  override def findTopLevelTypes(definition: Definition): Set[Definition] = {
-    (definition.allReferencedTypes + definition).filter(_.isTopLevel)
   }
 }
