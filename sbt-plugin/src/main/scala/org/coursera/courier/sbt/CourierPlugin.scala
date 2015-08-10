@@ -18,11 +18,11 @@ package org.coursera.courier.sbt
 
 import com.linkedin.util.FileUtil
 import org.apache.commons.lang3.exception.ExceptionUtils
+import org.coursera.courier.ScalaGenerator
 import org.coursera.courier.api.DefaultGeneratorRunner
 import org.coursera.courier.api.GeneratorRunnerOptions
 import org.coursera.courier.api.PegasusCodeGenerator
 import org.coursera.courier.generator.ScalaDataTemplateGenerator
-import org.coursera.courier.generator.twirl.TwirlDataTemplateGenerator
 
 import sbt._
 import Keys._
@@ -77,7 +77,7 @@ object CourierPlugin extends Plugin {
 
   private def courierSettings(conf: Configuration): Seq[Def.Setting[_]] = Seq(
 
-    courierGeneratorClass in conf := classOf[TwirlDataTemplateGenerator],
+    courierGeneratorClass in conf := classOf[ScalaGenerator],
 
     courierSourceDirectory in conf := (sourceDirectory in conf).value / "pegasus",
 

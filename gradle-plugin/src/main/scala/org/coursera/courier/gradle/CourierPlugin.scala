@@ -5,8 +5,6 @@ import java.io.File
 import org.coursera.courier.api.DefaultGeneratorRunner
 import org.coursera.courier.api.GeneratorRunnerOptions
 import org.coursera.courier.api.PegasusCodeGenerator
-import org.coursera.courier.generator.ScalaDataTemplateGenerator
-import org.coursera.courier.generator.twirl.TwirlDataTemplateGenerator
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
@@ -41,6 +39,24 @@ class CourierPluginExtension {
  *
  * https://github.com/linkedin/rest.li/blob/master/gradle-plugins/
  * src/main/groovy/com/linkedin/pegasus/gradle/PegasusPlugin.groovy#L1163
+ *
+ * This gradle plugin can run any pegasus data generator implementation that extends
+ * PegasusCodeGenerator.  By default, the Courier Scala generator will be run.  To use an alternate
+ * generator, set the 'courier.codeGenerator' property in your build.gradle. E.g.:
+ *
+ * courier {
+ *   codeGenerator 'org.coursera.courier.AndroidGenerator'
+ * }
+ *
+ * And make sure to include the jar containing the code generator class in the buildscript
+ * dependencies classpath, e.g.:
+ *
+ * buildscript {
+ *   dependencies {
+ *     classpath "org.coursera.courier:courier-android:0.5.0"
+ *   }
+ * }
+ *
  */
 // TODO(jbetz): cross compile to scala 2.10 and 2.11 ?
 class CourierPlugin extends Plugin[Project] {
@@ -59,8 +75,9 @@ class CourierPlugin extends Plugin[Project] {
 
     val  dataSchemaDir = project.file(getDataSchemaPath(project, sourceSet))
 
-    val generatedDataBindingDir = project.file(getGeneratedDirPath(
-        project, sourceSet, genType = "Courier") + File.separatorChar + "scala")
+    // E.g. /src/mainGeneratedCourier or /src/testGeneratedCourier
+    val generatedDataBindingSourceSetDir = project.file(getGeneratedDirPath(
+        project, sourceSet, genType = "Courier") + File.separatorChar)
 
     val generateDataBindingTask = sourceSet.getTaskName("generate", "courier")
 
@@ -94,7 +111,7 @@ class CourierPlugin extends Plugin[Project] {
      *
      * This is used purely for it's classpath.
      *
-     * TODO(jbetz): implicitly add scala lib to this
+     * TODO(jbetz): implicitly add scala lib to this?
      */
     val courierCompile = configurations.maybeCreate("courierCompile")
       .setVisible(false)
@@ -147,7 +164,7 @@ class CourierPlugin extends Plugin[Project] {
       Map("type" -> classOf[GeneratorTask]).asJava,
       config.generateDataBindingTask).asInstanceOf[GeneratorTask]
     generatorTask.inputDir = config.dataSchemaDir
-    generatorTask.destinationDir = config.generatedDataBindingDir
+    generatorTask.destinationSourceSetDir = config.generatedDataBindingSourceSetDir
     generatorTask.resolverPath = config.dataModel
     generatorTask.onlyIf(new Spec[Task] {
       override def isSatisfiedBy(t: Task): Boolean = {
@@ -294,17 +311,17 @@ class CourierPlugin extends Plugin[Project] {
 }
 
 class GeneratorTask extends DefaultTask {
-  @OutputDirectory @BeanProperty var destinationDir: File = _
+  @OutputDirectory @BeanProperty var destinationSourceSetDir: File = _
   @InputDirectory @BeanProperty var inputDir: File = _
   @InputFiles @BeanProperty var resolverPath: FileCollection = _
 
   @TaskAction
   protected def generate(): Unit = {
     val extension = getProject.getProperties.get("courier").asInstanceOf[CourierPluginExtension]
-    System.err.println("extension: " + extension)
-    System.err.println("extension.codeGenerator: " + extension.codeGenerator)
-    val pegasusCodeGeneratorClass = Option(extension.codeGenerator).getOrElse(classOf[TwirlDataTemplateGenerator].getName)
-
+    val pegasusCodeGeneratorClass =
+      Option(extension.codeGenerator).getOrElse("org.coursera.courier.ScalaGenerator")
+    val generator = Class.forName(pegasusCodeGeneratorClass).newInstance().asInstanceOf[PegasusCodeGenerator]
+    val destinationDir = new File(destinationSourceSetDir, generator.language())
     destinationDir.delete()
     destinationDir.mkdirs()
 
@@ -319,7 +336,7 @@ class GeneratorTask extends DefaultTask {
 
     val generatorRunner = new DefaultGeneratorRunner()
     generatorRunner.run(
-      Class.forName(pegasusCodeGeneratorClass).newInstance().asInstanceOf[PegasusCodeGenerator],
+      generator,
       new GeneratorRunnerOptions(destinationDir.getAbsolutePath, pdscFileArray, resolverPathStr))
   }
 }

@@ -2,12 +2,13 @@ apply plugin: 'scala'
 apply plugin: 'courier'
 
 courier {
-  codeGenerator 'org.coursera.courier.android.RythmTemplateGenerator'
+  //codeGenerator 'org.coursera.courier.ScalaGenerator'
+  codeGenerator 'org.coursera.courier.AndroidGenerator'
 }
 
 dependencies {
-  compile 'org.scala-lang:scala-library:2.11.5'
-  courierCompile 'org.scala-lang:scala-library:2.11.5'
-  courierCompile 'org.coursera.courier:courier-runtime_2.11:0.4.2-SNAPSHOT'
+  compile "org.scala-lang:scala-library:$scalaVersion"
+  courierCompile "org.scala-lang:scala-library:$scalaVersion"
+  courierCompile "org.coursera.courier:courier-runtime_$scalaMajorVersion:$courierVersion"
   courierCompile 'com.google.code.gson:gson:2.3.1'
 }

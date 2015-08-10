@@ -1,4 +1,4 @@
-import org.coursera.courier.android.RythmTemplateGenerator;
+import org.coursera.courier.AndroidGenerator;
 import org.coursera.courier.api.DefaultGeneratorRunner;
 import org.coursera.courier.api.GeneratorRunnerOptions;
 
@@ -6,7 +6,7 @@ import org.coursera.courier.api.GeneratorRunnerOptions;
 public class HelloWorld {
   public static void main(String[] args) throws Throwable {
     new DefaultGeneratorRunner().run(
-      new RythmTemplateGenerator(),
+      new AndroidGenerator(),
       new GeneratorRunnerOptions(
         "/Users/jbetz/base/coursera/courier/android/src/test/mainGeneratedPegasus",
         new String[] {

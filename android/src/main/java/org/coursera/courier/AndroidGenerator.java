@@ -1,10 +1,11 @@
-package org.coursera.courier.android;
+package org.coursera.courier;
 
 import com.linkedin.data.schema.DataSchema;
 import com.linkedin.pegasus.generator.spec.ClassTemplateSpec;
 import com.linkedin.pegasus.generator.spec.EnumTemplateSpec;
 import com.linkedin.pegasus.generator.spec.RecordTemplateSpec;
 import com.linkedin.pegasus.generator.spec.UnionTemplateSpec;
+import org.coursera.courier.android.TypedDefinitions;
 import org.coursera.courier.api.GeneratedCode;
 import org.coursera.courier.api.GeneratedCodeTargetFile;
 import org.coursera.courier.api.PegasusCodeGenerator;
@@ -14,10 +15,10 @@ import org.rythmengine.resource.ClasspathResourceLoader;
 import java.util.Collection;
 import java.util.Collections;
 
-public class RythmTemplateGenerator implements PegasusCodeGenerator {
+public class AndroidGenerator implements PegasusCodeGenerator {
   private final RythmEngine engine;
 
-  public RythmTemplateGenerator() {
+  public AndroidGenerator() {
     engine = new RythmEngine();
     engine.registerResourceLoader(new ClasspathResourceLoader(engine, "/"));
   }
@@ -76,5 +77,10 @@ public class RythmTemplateGenerator implements PegasusCodeGenerator {
   @Override
   public Collection<DataSchema> definedSchemas() {
     return Collections.emptySet();
+  }
+
+  @Override
+  public String language() {
+    return "java";
   }
 }

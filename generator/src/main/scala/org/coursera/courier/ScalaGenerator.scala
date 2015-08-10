@@ -14,12 +14,11 @@
  limitations under the License.
  */
 
-package org.coursera.courier.generator.twirl
+package org.coursera.courier
 
 import com.typesafe.scalalogging.slf4j.StrictLogging
-import org.coursera.courier.api.PegasusCodeGenerator
-import org.coursera.courier.generator.ScalaCompilationUnit
 import org.coursera.courier.generator.CourierPredef
+import org.coursera.courier.generator.ScalaCompilationUnit
 import org.coursera.courier.generator.ScalaGeneratedCode
 import org.coursera.courier.generator.TemplateGenerator
 import org.coursera.courier.generator.specs.ArrayDefinition
@@ -42,7 +41,7 @@ import org.coursera.courier.templates.txt.UnionClass
 /**
  * Generates Scala files using the Twirl string template engine.
  */
-class TwirlDataTemplateGenerator()
+class ScalaGenerator()
   extends TemplateGenerator
   with StrictLogging {
 
@@ -103,4 +102,6 @@ class TwirlDataTemplateGenerator()
       Some(ScalaGeneratedCode(code, ScalaCompilationUnit(definition.scalaType, namespace)))
     }.toSeq
   }
+
+  override def language() = "scala"
 }

@@ -18,9 +18,9 @@ package org.coursera.courier.generator
 
 import com.linkedin.pegasus.generator.JavaCodeGeneratorBase
 import com.linkedin.pegasus.generator.PegasusDataTemplateGenerator
+import org.coursera.courier.ScalaGenerator
 import org.coursera.courier.api.DefaultGeneratorRunner
 import org.coursera.courier.api.GeneratorRunnerOptions
-import org.coursera.courier.generator.twirl.TwirlDataTemplateGenerator
 
 import scala.collection.JavaConverters._
 
@@ -48,7 +48,7 @@ object ScalaDataTemplateGenerator {
     val generatePredef = false // set to true temporarily to manually generate predef
 
     val result = new DefaultGeneratorRunner().run(
-      new TwirlDataTemplateGenerator(),
+      new ScalaGenerator(),
       new GeneratorRunnerOptions(
         targetDirectoryPath,
         sources,
