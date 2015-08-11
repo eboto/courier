@@ -1,4 +1,4 @@
-apply plugin: 'scala' // TODO: remove once I switch to a groovy plugin
+apply plugin: 'groovy'
 apply plugin: 'maven'
 apply plugin: 'signing'
 
@@ -8,11 +8,10 @@ repositories {
 }
 
 group = "org.coursera.courier"
-archivesBaseName = "gradle-plugin_$scalaMajorVersion" // TODO: remove scalaMajorVersion once I switch to a groovy plugin
+archivesBaseName = "gradle-plugin"
 version = courierVersion
 
 dependencies {
-  compile "org.scala-lang:scala-library:$scalaVersion" // TODO: remove once I switch to a groovy plugin
   compile "org.coursera.courier:courier-generator-api:$courierVersion"
   compile gradleApi()
 }
